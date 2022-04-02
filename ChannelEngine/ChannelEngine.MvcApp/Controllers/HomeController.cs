@@ -1,4 +1,5 @@
-﻿using ChannelEngine.MvcApp.Models;
+﻿using ChannelEngine.Domain.Interfaces.Services;
+using ChannelEngine.MvcApp.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using System;
@@ -12,15 +13,34 @@ namespace ChannelEngine.MvcApp.Controllers
     public class HomeController : Controller
     {
         private readonly ILogger<HomeController> _logger;
+        private readonly IOrderService _orderService;
 
-        public HomeController(ILogger<HomeController> logger)
+        public HomeController(ILogger<HomeController> logger,
+            IOrderService orderService)
         {
             _logger = logger;
+            _orderService = orderService;
         }
 
-        public IActionResult Index()
+        public async Task<IActionResult> Index()
         {
-            return View();
+            var results = await _orderService.ListTopProductsSold(5);
+
+            var orders = results.Select(q => new OrderViewModel
+            {
+                Gtin = q.Gtin,
+                ProductName = q.ProductName,
+                MerchantProductNo = q.MerchantProductNo,
+                TotalQuantity = q.TotalQuantity
+            });
+
+            return View(orders);
+        }
+
+        public async Task<IActionResult> UpdateStock(UpdateStockRequest request)
+        {
+            var response = await _orderService.UpdateProductStock(request.MerchantProductNo, request.StockQuantity);
+            return Json(response);
         }
 
         public IActionResult Privacy()

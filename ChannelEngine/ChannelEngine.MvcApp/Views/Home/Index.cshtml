@@ -1,8 +1,38 @@
-﻿@{
+﻿@model IEnumerable<OrderViewModel>
+@{
     ViewData["Title"] = "Home Page";
 }
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://docs.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
-</div>
+<table class="table">
+    <thead>
+        <tr>
+            <th>Product Name</th>
+            <th>GTIN</th>
+            <th>Total Quantity</th>
+            <th>Action</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var m in Model)
+        {
+            <tr merchant-productno="@m.MerchantProductNo">
+                <td>@m.ProductName</td>
+                <td>@m.Gtin</td>
+                <td>@m.TotalQuantity</td>
+                <td><button class="btn btn-primary btnUpdateStock" type="button">Update Stock</button></td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+@section Scripts{
+    <script type="text/javascript">
+        $('.btnUpdateStock').on('click', function (e) {
+            e.preventDefault();
+            var productNo = $(this).closest('tr').attr('merchant-productno');
+            $.post('Home/UpdateStock', { MerchantProductNo: productNo, StockQuantity: 25 }, function (response) {
+                alert(response.message);
+            });
+        });
+    </script>
+}
