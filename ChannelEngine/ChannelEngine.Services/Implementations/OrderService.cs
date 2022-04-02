@@ -42,9 +42,9 @@ namespace ChannelEngine.Services.Implementations
             var orderLines = await ListAllInProgressOrderLines();
 
             var orders = orderLines.GroupBy(
-                q => new { q.Description, q.Gtin },
+                q => new { q.Description, q.Gtin, q.MerchantProductNo },
                 q => q.Quantity,
-                (key, g) => new OrderModel { ProductName = key.Description, Gtin = key.Gtin, TotalQuantity = g.Sum() });
+                (key, g) => new OrderModel { ProductName = key.Description, Gtin = key.Gtin, MerchantProductNo = key.MerchantProductNo, TotalQuantity = g.Sum() });
 
             return orders.OrderByDescending(q => q.TotalQuantity)
                 .Take(numItems);
@@ -52,18 +52,14 @@ namespace ChannelEngine.Services.Implementations
 
         public async Task<MerchantStockUpdateResponse> UpdateProductStock(string productNo, int stockQuantity)
         {
-            var orderLines = await ListAllInProgressOrderLines();
-
-            var order = orderLines.First();
-
             var stockUpdateRequest = new MerchantOfferStockUpdateRequest
             {
-                MerchantProductNo = order.MerchantProductNo,
+                MerchantProductNo = productNo,
                 StockLocations = new List<MerchantStockLocationUpdateRequest> { new MerchantStockLocationUpdateRequest { Stock = stockQuantity } }
             };
 
             var request = new RestRequest("offer/stock")
-                .AddBody(stockUpdateRequest);
+                .AddJsonBody(new List<MerchantOfferStockUpdateRequest> { stockUpdateRequest });
 
             var response = await _client.PutAsync<MerchantStockUpdateResponse>(request);
             return response;
@@ -74,6 +70,6 @@ namespace ChannelEngine.Services.Implementations
             _client?.Dispose();
             GC.SuppressFinalize(this);
         }
-        
+
     }
 }
