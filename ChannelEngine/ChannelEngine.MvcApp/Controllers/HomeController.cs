@@ -24,7 +24,8 @@ namespace ChannelEngine.MvcApp.Controllers
 
         public async Task<IActionResult> Index()
         {
-            var results = await _orderService.ListTopProductsSold(5);
+            var orderLines = await _orderService.ListAllInProgressOrderLines();
+            var results = _orderService.ListTopProductsSold(orderLines, 5);
 
             var orders = results.Select(q => new OrderViewModel
             {

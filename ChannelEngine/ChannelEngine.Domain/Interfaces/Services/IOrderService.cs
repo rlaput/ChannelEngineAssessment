@@ -10,7 +10,7 @@ namespace ChannelEngine.Domain.Interfaces.Services
     public interface IOrderService
     {
         Task<IEnumerable<MerchantOrderLineResponse>> ListAllInProgressOrderLines();
-        Task<IEnumerable<OrderModel>> ListTopProductsSold(int numItems);
         Task<MerchantStockUpdateResponse> UpdateProductStock(string productNo, int stockQuantity);
+        IEnumerable<OrderModel> ListTopProductsSold(IEnumerable<MerchantOrderLineResponse> orderLines, int numItems);
     }
 }

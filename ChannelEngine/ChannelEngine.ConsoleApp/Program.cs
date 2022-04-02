@@ -16,7 +16,9 @@ namespace ChannelEngine.ConsoleApp
 
             var orderService = serviceProvider.GetService<IOrderService>();
 
-            var topProductsSold = orderService.ListTopProductsSold(5).Result;
+            var orders = orderService.ListAllInProgressOrderLines().Result;
+
+            var topProductsSold = orderService.ListTopProductsSold(orders, 5);
 
             Console.WriteLine("Product Name | GTIN | Total Quantity");
             Console.WriteLine("------------------------------------");

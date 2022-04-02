@@ -37,19 +37,6 @@ namespace ChannelEngine.Services.Implementations
             return orderLines;
         }
 
-        public async Task<IEnumerable<OrderModel>> ListTopProductsSold(int numItems)
-        {
-            var orderLines = await ListAllInProgressOrderLines();
-
-            var orders = orderLines.GroupBy(
-                q => new { q.Description, q.Gtin, q.MerchantProductNo },
-                q => q.Quantity,
-                (key, g) => new OrderModel { ProductName = key.Description, Gtin = key.Gtin, MerchantProductNo = key.MerchantProductNo, TotalQuantity = g.Sum() });
-
-            return orders.OrderByDescending(q => q.TotalQuantity)
-                .Take(numItems);
-        }
-
         public async Task<MerchantStockUpdateResponse> UpdateProductStock(string productNo, int stockQuantity)
         {
             var stockUpdateRequest = new MerchantOfferStockUpdateRequest
@@ -63,6 +50,17 @@ namespace ChannelEngine.Services.Implementations
 
             var response = await _client.PutAsync<MerchantStockUpdateResponse>(request);
             return response;
+        }
+
+        public IEnumerable<OrderModel> ListTopProductsSold(IEnumerable<MerchantOrderLineResponse> orderLines, int numItems)
+        {
+            var orders = orderLines.GroupBy(
+                q => new { q.Description, q.Gtin, q.MerchantProductNo },
+                q => q.Quantity,
+                (key, g) => new OrderModel { ProductName = key.Description, Gtin = key.Gtin, MerchantProductNo = key.MerchantProductNo, TotalQuantity = g.Sum() });
+
+            return orders.OrderByDescending(q => q.TotalQuantity)
+                .Take(numItems);
         }
 
         public void Dispose()
